@@ -1,0 +1,92 @@
+---
+title: "muestreos"
+output: html_document
+---
+# el siguiente documento cuenta con la forma en que se hacen los muestreos ya sea mediante el uso de python o  r 
+
+## Muestreo sin remplazo 
+para este tipo de muestreos vamos a hacer uso de el dataset de petals 
+```{r}
+iris <-iris
+## setwd lo usamos para fijar el muestreo ya que esi queremos repetir el experimento el ##resultado sera diferente.  
+set.seed(4)
+flower_choose <- sample(1:150, 10, replace = TRUE)
+samp_wpemp <- iris[flower_choose,]
+head(samp_wpemp,10)
+```
+
+### muestreo sin remplazo
+
+a diferencia del primero este no retorna los que ya han salido una vez 
+```{r}
+set.seed(4)
+flower2_choose <- sample(1:150, 10, replace = FALSE)
+smapwtrep <- iris[flower2_choose,]
+head(smapwtrep, 10)
+```
+
+
+### Muestreo sistematico 
+
+El muestreo sistematico consiste en tomar los intervalos constantes escogiendo al azar 
+el primer individuo que elegimos 
+
+```{r}
+set.seed(14)
+(firs_chose <- sample(1:150, 1))
+##determinamos el muestreo por lo tanto la secuencia esta dada por el numero de la ##muestra sobre el numero de observaciones que quiero obtener.
+incremento <-floor(150/15) 
+## el siguente paso es programar la secuencia de la eleccion de la muestra 
+sistem_sample <- seq(from=firs_chose, by=incremento, length.out=10)
+##usamos una division modular , recuerda el uso de geometria modular y el reloj en dado
+##caso de que se tenga que la secuencia rebase el universo
+sistem_sample <- sistem_sample%%150
+##hacemos la muestra 
+sistem_sample_iris = iris[sistem_sample,]
+head(sistem_sample_iris, 10)
+
+```
+
+### muestreo por estratificacion 
+este muestreo se usa cuando existen segmentaciones en la población y queremos una representacion de cada subpoblacion de la muestra, cabe aclarar que cada subpoblacion debe ser representativa de la muestra. Para el suguiente ejemplo vamos a utilizar el dataset de iris es importante mencionar que ya viene estratificado.
+```{r}
+set.seed(7)
+estsamp_settosa <- sample(1:50, 4, replace = TRUE)
+estsamp_versicolor <- sample(51:100, 4, replace = TRUE)
+estsamp_virginica <- sample(101:50, 4, replace = TRUE)
+##juntamos las 3 muestras 
+(muest_est_iris <- rbind(iris[estsamp_settosa,], iris[estsamp_versicolor,],
+                         iris[estsamp_virginica,]))
+```
+### Muestreo por conglomerados 
+en este caso lo que planeamos hacer es estratificar igual a la poblacion pero el uso de este es especial ya que se ocupa cuando el diseño es costoso.
+
+
+## Media muestral revision del experimento 
+ el valor esperado de la muestra debe coincidir con la desviacion estandar de la poblacion, al igual el valor esperado debe ser igual o cercano a la media poblacional.
+
+Para esto vamos a contrastar una evaluacion con la media de 1000 muestras y con la media de todo el universo 
+
+```{r}
+set.seed(1001)
+valores_medios_sw <- replicate(1000, mean(sample(iris$Sepal.Width,40, replace = TRUE)))
+head(valores_medios_sw, 5)
+##contrastamos las medias 
+mean(valores_medios_sw)
+mean(iris$Sepal.Width)
+##contrastamos la prueba de la dsviacion estandar
+sd(valores_medios_sw) ##valores de la desviacion estandar
+
+sd(iris$Sepal.Width)/sqrt(40) ## desviacion estandar de la poblacion sobre la raiz de N
+##deben ser coincidentes o aproximadas ambas.
+
+
+```
+
+
+
+
+
+
+
+
