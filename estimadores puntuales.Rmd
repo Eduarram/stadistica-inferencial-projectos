@@ -1,0 +1,105 @@
+---
+title: "Estimación muestral"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## MASS
+cargamos el paquete mass para la estimacion de una poisson en este caso vamos a usar la funcion firstdir para la estimacion de los parametros aqui es importante mencionar que la funcion depende de el comportamiento de la variable aleatoria y como la vayas a modelar.
+```{r}
+library(MASS)
+set.seed(368)
+le_poison <- rpois(50, lambda = 5)
+le_poison
+```
+estimamos el lambda con la funcion firstdir 
+
+```{r cars}
+fitdistr(le_poison, densfun = "poisson")
+```
+
+## desviacion tipica verdadera 
+para obtener la desviacion tipica verdadera se utliza sigma gorrito por la raiz de n-1/n 
+
+```{r pressure, echo=FALSE}
+sd_true <- sd(le_poison)*sqrt(49/50)
+sd_true
+```
+cargamos python para una ver como se hace en python 
+
+```{r}
+library(reticulate)
+
+use_python("/home/rodrigo/miniconda3")
+```
+
+##usamos python 
+
+En este caso usamos la paqueteria de scipy stats el cual es el equivalente a MASS 
+```{python}
+from scipy.stats import norm 
+from numpy import linspace
+from pylab import plot, show, hist, figure, title
+```
+iniciamos las estimaciones elegimos una muestra aleatoria simple con de tamaño 150 de una variable aleatoria normal 
+                            $N(0, 5)$
+
+```{python}
+sample = norm.rvs(loc=0, scale=1, size=150)
+print(sample[1:10])
+
+```
+
+para estimar los parametros usamos la funcion adecuada en este caso una normal en este caso la funcion "fit"
+
+```{python}
+params = norm.fit(sample)
+print(params)
+```
+
+vamos a comparar la distribucion de la muestra con los parametros estimados vs la muestra
+
+```{python}
+x = linspace(-5,5,100)
+pdf_fitted = norm.pdf(x, loc=params[0], scale=params[1])
+pdf_original = norm.pdf(x, loc=0, scale=1)
+```
+
+## Revision de parametros en python
+```{python}
+import matplotlib.pyplot as plt 
+plt.title("Ajuste de una Normal")
+plt.plot(x,pdf_fitted,'r-',pdf_original,'b--')
+plt.hist(sample, normed=1,alpha=0.3)
+plt.show()
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
