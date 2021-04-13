@@ -69,21 +69,75 @@ pdf_original = norm.pdf(x, loc=0, scale=1)
 ```
 
 ## Revision de parametros en python
-```{python}
+
+
+```{python include=FALSE}
 import matplotlib.pyplot as plt 
 plt.title("Ajuste de una Normal")
 plt.plot(x,pdf_fitted,'r-',pdf_original,'b--')
 plt.hist(sample, normed=1,alpha=0.3)
 plt.show()
+```
+## distribucion de raleigh 
+importamos a la funcion y calculamos los primeros momentos
 
+```{python}
+from scipy.stats import rayleigh
+fig, ax = plt.subplots(1, 1)
+mean, var, skew, kurto = rayleigh.stats('mvsk')
+
+x = linspace(rayleigh.ppf(0.01),
+                rayleigh.ppf(0.99), 150)
+                
+ax.plot(x, rayleigh.pdf(x),
+       'r-', lw=5, alpha=0.6, label='rayleigh pdf')
+rv = rayleigh()
+ax.plot(x, rv.pdf(x), 'k-', lw=2, label='frozen pdf')
+
+from numpy import allclose
+
+vals = rayleigh.ppf([0.001, 0.5, 0.999])
+allclose([0.001, 0.5, 0.999], rayleigh.cdf(vals))
+True
+
+r = rayleigh.rvs(size=1000)
+
+ax.hist(r, density=True, histtype='stepfilled', alpha=0.2)
+ax.legend(loc='best', frameon=False)
+plt.show()
+
+```
+
+## ejemplo
+ahora con el ejemplo de Gomilla salas forma en latex 
+
+```{python}
+from scipy.stats import rayleigh
+sample=rayleigh.rvs(loc=5, scale=2, size=150)
+params=rayleigh.fit(sample)
+print("Media={mu}".format(mu=params[0]))
+print("desviacion tipica={sd}".format(sd=params[1]))
 
 ```
 
 
+## Estimacion de los parametros 
+```{python}
+x=linspace(5, 15, 100)
+pdf_fitted=rayleigh.pdf(x, loc=params[0], scale=params[1])
+pdf_original=rayleigh.pdf(x, loc=5, scale=2)
+
+```
 
 
-
-
+##graficamos la distribucion de rayleigh
+```{python}
+_=plt.figure(fig.size=(5, 2.9))
+_=plt.title("distribucion de rayleigh")
+_=plt.plot(x, pdf_fitted, 'r-', pdf_original, 'b--')
+_=plt.hist(sample,normed=1, alpha=0.3)
+_=plt.show()
+```
 
 
 
