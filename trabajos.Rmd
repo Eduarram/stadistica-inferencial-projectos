@@ -1,0 +1,51 @@
+---
+title: "trabajos de estadistica"
+author: "eduardo rodrigo ramírez salgado"
+date: "23/11/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## simulacion de los intervalos de confianza
+
+consideramos una poblacion de 10^6 valores de una distribucion normal de parametros mu=1.5 y sigma=1
+
+```{r cars}
+set.seed(1012)
+mu=1.5; sigma=1; alpha=0.05
+poblacion=rnorm(10^6, mu, sigma)
+
+```
+
+## muestras 
+primero definiremos una funcion para, que dada una muestra, un valor sigma, y un nivel de significacion alpha, nos genere el intervalo correspondiente para el parametro mu y el nivel de confianza 100(1-alpha), lo llamaremos ICZ 
+
+```{r pressure, echo=FALSE}
+ICZ=function(x, sigma, alpha){
+  c(mean(x)-qnorm(1-alpha/2)*sigma/sqrt(length(x)),
+    mean(x)+qnorm(1-alpha/2)*sigma/sqrt(length(x)))
+}
+```
+
+usando las funciones replicate de R generamos las muestras y los intervalos de confianza
+```{r}
+set.seed(2)
+M=replicate(100, ICZ(sample(poblacion,50, replace=TRUE),sigma,alpha))
+
+```
+
+generamos una grafica con todos los intrvalos generados y los que estan en rojo, son aquellos en los que los parametros mu=1.5 no esten en ellos.
+
+```{r}
+plot(1:10, type = "n", xlim = c(1.2, 1.8), ylim = c(0, 100), xlab = "valores", ylab = "replicaciones")
+seg.int=function(i){
+  color="blue";
+  if((mu<M[1,i])|(mu>M[2,i])){color="red"}
+  segments(M[1,i],i,M[2,i],i, col = color,lwd=3)}
+invisible(sapply(1:100, FUN = seg.int))
+abline(v=mu, lwd=3)
+```
+
