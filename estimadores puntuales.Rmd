@@ -32,8 +32,8 @@ cargamos python para una ver como se hace en python
 
 ```{r}
 library(reticulate)
+use_python(file.choose())
 
-use_python("/home/rodrigo/miniconda3")
 ```
 
 ##usamos python 
