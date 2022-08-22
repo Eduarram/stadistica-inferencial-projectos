@@ -133,14 +133,847 @@ round(IC.booth)
 library(boot)
 #para hacer el reshape con una funcion predeterminada en R 
 
+```
 
+# intervalos de confianza
+
+##funcion r.ttest_
+
+```{r}
+set.seed(230)
+flores_elegidas <- sample(1:150, 40, replace = TRUE)
+(long.sepalo.muestra <- iris[flores_elegidas,]$Sepal.Length)
+```
+### ttest en accion
+
+en mu es 5.7 un pequeño error. 
+
+```{r}
+t.test(long.sepalo.muestra, mu=mean(iris$Sepal.Length), alternative = "greater", conf.level = 0.95)
+```
+
+```{r}
+t.test(long.sepalo.muestra, mu=mean(iris$Sepal.Length), alternative = "greater", conf.level = 0.95)$conf.int
+### con la sintaxis de $ peudes acceder al atributo que quieres.
+```
+
+
+# contrastes de hipotesis de una bernoulli 
+
+tenemos un test para determinados microorganismos, en una muestra de 25 cultivos con este microorganismo el tets detecto 21 casos positivos.
+
+*el valor del estadistico del contraste es  $$x_0=21 $$ 
+
+*el p-valor sera $$P(B(25,0.8) \geq\ 21 = 1-pbinom(20, 25, 28) = 0.420$$
+
+```{r}
+p = 1- pbinom(20, 25, 0.8)
+
+p
+```
+
+como el p-valor es muy grande no tenemos evidencia para rechazar la hipotesis nula. 
+
+ no hay evidencia de que el test sea superior al 80%.
+
+## contrastes para proporciones en R
+
+```{r}
+binom.test(21, 25, p=0.8, alternative = "greater", conf.level = 0.05)
+```
+```{r}
+library(MASS)
+set.seed(1004)
+madres_eleg <- sample(1:length(birthwt$age),30, replace =TRUE)
+madres_eleg_m <- birthwt[madres_eleg,]
+
+```
+
+vamos a contrastar la hipotesis de si las madres fumadoras superan el 30%
+
+```{r}
+mad_max <- table(madres_eleg_m$smoke)[2]
+## 1 fuma y 0 no
+
+binom.test(mad_max, 30, p=0.3, alternative = "greater")
+
+
+```
+
+
+# contrastes para sigma de una distribucion $$x^2$$
+
+
+EJERCICIO 
+
+se han medido los siguientes valosres en miles de personas para la audiencia de un programa de radio en $$n=10$$ dias
+
+contrastar si la varianza de la audiencia es 6400 al nivel de significacion del $$\alpha=0.05$$ suponiendo que la poblacion es normal.
+
+EJEMPLO:
+
+el contraste de hipotesis es el siguiente.
+
+$$
+\left\{
+\begin{array}{ll}
+H_0: & \sigma = \sqrt{6400}\\
+H_1: & \sigma \neq 80 
+\end{array}
+\right.
+$$
+a un nivel de significancia $$\alpha=0.05$$
+
+```{r}
+vect <- c(521,742,593,635,788,717,606,639,666,624)
+n1 <- 10
+
+(chi_2 = (length(vect)-1)*var(vect)/6400)
+```
+el p-valor sera
+
+$$2*P(x^2_9 \geq 8.595)=0.9151$$
+$$2*P(x^2_9 \leq 8.595=1.049)=1.049$$
+#ahora con el paquete teaching demos
+
+```{r}
+library(TeachingDemos)
+```
+
+
+```{r}
+sigma.test(vect, sigma = 80, alternative = "two.sided", conf.level = 0.95)
+```
+
+ahora con el sepalo de las flores
+
+
+```{r}
+set.seed(2019)
+flores_elegidas <- sample(1:150, 40, replace = TRUE)
+muestra_florg <- iris[flores_eleg,]
+
+sigma.test(muestra_florg$Sepal.Width,sigmasq = 0.2 ,alternative = "less", conf.level = 0.95)
+```
+
+#funcion t.test para  2 variables.
+
+###ejercicio
+
+imaginemos ahora que nos planteamos la media de la longitud del petalo es la misma para lasflores delas especies setosay versicolor. 
+
+para ello seleccionamos una muestra aleatoria simple.
+
+```{r}
+set.seed(45)
+flores_eleg_setosa<- sample(1:50, 40, replace = TRUE)
+flores_eleg_porcicolor <- sample(51:100, 40, replace= TRUE)
+muestra_setosa <- iris[flores_eleg_setosa,]
+muestra_porcicolor <- iris[flores_eleg_porcicolor,]
+```
+
+el contraste se plantea de la forma siguiente.
+
+```{r}
+t.test(muestra_setosa$Petal.Length, muestra_porcicolor$Petal.Length,
+       alternative = "two.sided")
+```
+
+###ejemplo 
+
+la setosa es completamente diferente a las versicolor, 
+
+$$'\left\{
+\begin{array}{ll}
+H_0: & \mu_s = \mu_v\\
+H_1: & \mu_s \neq \mu_v 
+\end{array}
+\right'$$
+
+donde $$\mu_s$$ representa la media de la longitud del petalo de las flores de la especie setosa, y $$\mu_v$$ representa la media de la longitud de las especies versicolor, 
+
+
+el p-valor del contraste ha sido practicamente cero lo que nos hace concluir que las medias son estrictamente diferentes e independientes una de la otra.  
+
+las medias de las 2 muestras son: $$\mu_s=1.4075$$ y \mu_v=4.19 los valores son muy diferentes.
+
+
+```{r}
+t.test(muestra_setosa$Petal.Length, muestra_porcicolor$Petal.Length,
+       alternative = "two.sided")$conf.int
+```
+el intervalo no contiene el valor 0 ya que esta del lado de la izquierda.
+
+
+```{r}
+set.seed(45)
+muest_cmplet <- sample(1:100, 80, replace = TRUE)
+prueb_m<-iris[muest_cmplet,]
+
+library(ggplot2)
+
+ggplot(prueb_m, mapping = aes(x=Petal.Length, fill=Species)) + geom_density() + geom_vline(xintercept = 1.437) + geom_vline(xintercept = 4.319) + geom_vline(xintercept = 1.437-4.319, show.legend = "mu1-mu2")
+
+
+```
+```{r}
+tapply(prueb_m$Petal.Length, INDEX = prueb_m$Species,FUN = mean ,simplify = TRUE)
+```
+
+# contraste de proporciones $$p_1$$ y $$p_2$$
+
+## test de fisher
+
+para determinar si el sindrome de muerte repentina del bebe (SIDS) tiene componiendo genetico se consideran los casos de sids en parejas de gemelos monocigoticos y dicigoticos. sea: 
+
+p1: proporcion de parejas de gemelos monocigoticos con algun caso de SIDS.
+p2:proporcion de parejas dicigoticos con algun caso de sids donde solo un hermeno sufrio.
+
+si el sisd tiene componiendo cigotico.
+nos pide realizar el siguiente contraste.
+
+$$\left\{
+\begin{array}{ll}
+H_0: & p_1 = p_2\\
+H_1: & p_1 < p_2 
+\end{array}
+\right.$$
+
+|casos de sids  |  monocigoticos  |  dicigoticos  |  total | 
+|---------------|-----------------|---------------|--------|
+|uno            |     23          |     35        |   58   |
+|dos            |      1          |      2        |    3   |
+|Total          |     23          |     37        |   61   |
+
+por el contraste de hipotesis ocupamos la segunda  formula,(consultar los apuntes)  
+
+```{r}
+phyper(23, 58, 3, 24)
+
+```
+popr lo tanto al obtener el p-valor grande no tenemos suficiente evidencia para rechazar la hipotesis nula. 
+
+
+# Test de fisher en R
+
+ejercicio de proporcion de madres fumadoras de raza blanca y las madres de raza negra.
+
+1- calculamos las etiquetas de cada raza 
+
+```{r}
+library(MASS)
+madres_raza_blanca <- rownames(birthwt[birthwt$race==1,])
+madres_raza_negra <- rownames(birthwt[birthwt$race==2,])
+
+```
+2- seguidamente elgimos las muestras de tamaño 50 de cada raza y creamos las muestras correspondientes.
+
+```{r}
+set.seed(2000)
+madres.elegidas.blanca <- sample(madres_raza_blanca, 50, replace = TRUE)
+madres.elegidraza.negra <- sample(madres_raza_negra, 50, replace = TRUE)
+muestra_raza_blanca <- birthwt[madres.elegidas.blanca,] 
+muestra_raza_negra <- birthwt[madres.elegidraza.negra,]
+```
+
+3- definimos ahora una tablade datos que contenga la informacion de las dos muestras consideradas.
+
+```{r}
+muestra.madres <- rbind(muestra_raza_blanca, muestra_raza_negra)
+View(muestra.madres)
+```
+
+4- a continucion calculamos la matriz para usar el test de fisher
+
+```{r}
+(matriz.fish <- table(muestra.madres$smoke, muestra.madres$race))
+```
+5- la matriz anterior no es correcta ya que la primera fila deberia ser la fila de exitos y es la fila de fracasos lo arreglamos permutando las filas.
+
+```{r}
+(matriz.fish <- rbind(matriz.fish[2,], matriz.fish[1,]))
+```
+
+6- por ultimo realizamos el contraste 
+
+```{r}
+fisher.test(matriz.fish)
+```
+# interpretacion 
+
+el p- valor del contraste ha sido 0.1056 valor mayor que 0.1 concluimos que no tenemos evidencias para rechazar que las proporciones de madres fumadoras de razas blencas y negras sean iguales. 
+
+### atencion 
+
+hay que tener cuidado en esta interpretacion del intervalo de confianza que da esta funcion no es ni para la diferencia de las proporciones ni para el cociente si no para sus odds ratio: el cociente.
+
+
+
+# contrastes de dos muestras mas generales 
+
+### ejemplo
+
+tenemos dos tratamientos A y B de una dolencia. tratamos 50 enfermos con A y con B, 20 enfermos tratados con A y 25 tratados con B, manifiestan haber sentido malestar general, durante los 7 dias posteriores al iniciar el tratamiento. 
+ 
+¿podemos concluir a un nivel de significacion del 5% que A produce malestar general en una proporcion de los enfermos en lo que produce B?
+
+
+sean $$p_1$$ la proporcion de enfermos en que A produce malestar general y
+$$p_2$$ la proporcion de enfermos que produce malestar general 
+
+el contraste de hipotesis es el siguiente.
+
+$$
+\left\{
+\begin{array}{ll}
+H_0: & p_1 \geq  p_2\\
+H_1: & p_1 > p_2 
+\end{array}
+\right.
+$$
+
+calculamos $$z_0$$
+
+```{r}
+(0.4-0.25-0.05)/sqrt((20+25)*(1-((20+25)/(50+100)))*((1/50) + (1/100)))
+
+```
+
+## por intervalos de confianza
+
+```{r}
+0.4-0.25-1.645*(sqrt(((50*0.4+100*0.25)/(50+100))*(1-((50*0.4+100*0.25)/(50+100)))*(1/50 + 1/100)))
+```
+va desde $$0.019, \infinite$$
+
+nos fijamos que el intervalo anterior contiene el valor incremento=0.05 razon que nos reafirma la desicion tomada de no rechazar que $$p_1 \geq p_2 + 0.05$$,  pero en cambio, no contiene el valor 0 y por tanto podriamos rechazar que $$p_1 = p_2$$.
+
+
+
+# contraste para dos varianzas mas generales.
+
+ejemplo:
+consideremos el ejemplo donde queriamos comparar los tiempos de realizacion de una tarea entre estudiantes de 2 grados G1 Y G2 suponemos que estos tiempos siguen distribuciones normales.
+
+disponemos de dos muestras independientes de los tiempos usados por los estudiantes de cada grado para realizar la tarea. los tamaños de cada muestra son n1 = n2 = 40.
+
+disponemos de 2 muestras independientes de los tiempos usados por los estudiantes de cada grado para realizar la tarea. Los tamaños de cada muestra son n1=n2=40.
+
+las desviaciones tipicas muestrales de los tiempos empleados para cada muestra son: 
+
+s1 = 1.201, s2= 1.579
+
+contrastar a un nivel de significancia del 0.05 
+
+
+
+```{r}
+# elaborar el estadistico de contraste
+(1.201^2)/(1.579^2)
+
+
+```
+
+
+el p valor de contraste sera: revisar apuntes 
+
+
+# ejemplo en R 
+se desea comparar la actividad motora espontanea de un grupo de 25 ratas de control y otro de 36 ratas desnutridas. se midio el numero de veces que pasaban ante una celda fotoelectrica. durante 24 horas, los datos obtenidos fueron los siguientes.
+
+
+|           |     n     |     x     |       s   |
+|1. control |    25     |     869.8 |     106.7 |
+|2. Desnutr |    36     |     665   |     133.7 | 
+
+¿se observan diferencias significativas en el grupo de control y el grupo desnutrido? 
+
+supondremos que los datos anteriores provienen de poblaciones normeles.
+
+El contraste de hipotesis es el siguiente: 
+
+$$
+\left\{
+\begin{array}{ll}
+H_0: & \mu_1 =  \mu_2\\
+H_1: & \mu_1 \neq \mu_2 
+\end{array}
+\right.
+$$
+donde $$\mu_1$$ y $$\mu_2$$ representan los valores medios del numero de veces que las ratas de control y desnutridas pasan ante la celda fotoelectrica respectivamente.
+
+Antes de nada, tenemos que averiguar si las varianzas de los dos grupos son iguales o no ya que es un parametro a usar en el contraste a realizar.
+
+por tanto en primer lugar realizaremos el contraste:
+
+$$
+\left\{
+\begin{array}{ll}
+H_0: & \sigma_1 =  \sigma_2\\
+H_1: & \sigma_1 \neq \sigma_2 
+\end{array}
+\right.
+$$
+donde $$\sigma_1$$ y $$\sigma_2$$ representan las desviaciones tipicas del numero de veces que las ratas de control y desnutridas pasan ante la celula fotoelectrica, respectivamente.
+
+(hacer en latex con el internet los contrastes)
+
+
+
+# Contrastes para varianzas en R 
+
+muestra de la setosa
+
+```{r}
+var.test(muestra_setosa$Petal.Length, muestra_porcicolor$Petal.Length)
+
+```
+## nota:
+
+* El test de fisher solo es aplicable a distribuciones con poblaciones     normales, en caso de que exista una duda, se debe usar un test no parametrico que no presuponga esta hipotesis. 
+
+* en cuyo caso se corre una prueba de bondad de ajuste.
+* hay diversos test no parametricos para realizar contrastes bilaterales de dos varianzas aqui os recomendamos el test de Flinger-Killen,    implementando la funcion flinger. test.
+
+-se aplica o bien a una list formada por las 2 muestras, o bien a una formula que separe un vector numerico en dos muestras por medio de un factor de dos niveles. 
+
+
+ ## Ejemplo: 
+realicemos el contraste previo a la igualdad de varianzas usando el test no parametrico anterior para ver si llegamos a la misma conclusion:
+ 
+```{r}
+fligner.test(list(muestra_setosa$Petal.Length, muestra_porcicolor$Petal.Length))
+```
+ como el p-valor vuelve a ser insignificante, llegamos a la misma conclusion anterior: tenemos evidencias suficientes para afirmar que las varianzas de las longitudes del petalo de las flores de las especies setosa y versicolor son diferentes. 
+ 
+la ventaja de este test es que no necesitamos normalidad en las muestras, aunque su potencia, que explicaremos adelante, sea inferior. 
+
+# ejemplo  de las muestras emparejadas 
+
+Disponemos de dos algoritmos de alineamiento de proteinas. los dos producen resultados de la misma calidad. 
+
+Estamos interesados en saber cual de los dos algoritmos es mas eficiente, en el sntido de tener un tiempo de ejecucion mas corto. suponemos que dichos tiempos de ejecucion siguen leyes normales. 
+
+Tomamos una muestra de proteinas y las aplicamos a los dos algoritmos anotando los tiempos de ejecucion sobre cada proteina. 
+
+los resultados son: 
+
+|             | 1   | 2   | 3   | 4   | 5   | 6   | 7   | 8   | 9  | 10  |
+|-------------|-----|-----|-----|-----|-----|-----|-----|-----|----|-----|
+| algoritmo 1 | 8.1 | 11.9| 11.4| 12.9| 9.0 | 7.2 | 12.4| 6.9 | 8.9| 8.3 |
+| algoritmo 2 | 6.9 | 6.7 | 8.3 | 8.6 | 18.9| 7.9 | 7.4 | 8.7 | 7.9| 12.4|
+| diferencias | 1.2 | 5.2 | 3.1 | 4.3 | -9.9| -0.7| 5.0 | -1.8| 1.0| -4.1| 
+
+calcular la media y la desviacion muestral de las diferencias.
+
+```{r}
+k <- c(1.2, 5.2, 3.1, 4.3, -9.9, -0.7, 5.0, -1.8, 1.0, -4.1)
+ka <- c(mean(k), sd(k))
+print(ka)
+```
+sq quieren saber el contraste de ejecucion para la media: 
+
+$$
+\left\{
+\begin{array}{ll}
+H_0: & \mu_1 =  \mu_2\\
+H_1: & \mu_1 \neq \mu_2 
+\end{array}
+\right.
+$$
+donde mu_1 y mu_2 son los tiempos de ejecucion de ambos algoritmos
+$$
+\left\{
+\begin{array}{ll}
+H_0: & \mu_d =  0\\
+H_1: & \mu_d \neq 0  
+\end{array}
+\right.
+$$
+el estadistico de contraste para el contraste anterior es T  que tiene una distribucion $$t_n-1=t_9$$ 
+
+dicho valor estadistico toma el sigyiente valor usando los valores muestrales $$t_0$$
+
+```{r}
+0.33/(4.715*sqrt(10))
+```
+el p-valor del contraste sera el siguiente 
+$$p=2*p(t_9>|0.221|=0.83)$$
+es un valor grande ppor tanto no tenemos evidencia suficientes para rechazar la hipotesis nula y concluimos que los tiempos de ejecucion de los algoritmos son los mismos. 
+
+
+# contrastes para medias emparejadas en R. el test de t 
+
+
+## Ejercicio
+
+nos planteamos si la longitud del sepalo supera la longitud del petalo virginica en la tabla de datos iris. en este caso se trataria de un contraste de medias dependientes:
+
+
+$$
+\left\{
+\begin{array}{ll}
+H_0: & \mu_{sepalo, virginica} =  \mu_{petalo,virginica}\\
+H_1: & \mu_{sepalo, virginica} > \mu_{petalo, virginica} 
+\end{array}
+\right.
+$$
+
+
+donde:
+$$
+\mu_{sepalo, virginica}
+\mu_{petalo, virginica}
+$$
+
+son las longitudes del sepalo y del petalo de las flores de la especie virginica.
+
+
+```{r}
+set.seed(100)
+flores_elegidas.virginica<-sample(101:150, 40, replace = TRUE)
+```
+
+Las muestra elegida sera 
+
+```{r}
+muestra_virginica <- iris[flores_elegidas.virginica,]
+
+```
+
+calculo de la muestra 
+
+```{r}
+t.test(muestra_virginica$Sepal.Length,muestra_virginica$Petal.Length, alternative = "greater"
+       ,paired = TRUE)
+```
+el p-valor es extremadamente bajo y el intervalo de confianza no contiene el valor 0 por lo que concluimos que existe evidencia sufificiente para rechazar la hipotesis nula.
+
+
+# ejemplo de proporciones emparejadas.
+
+se toma una muestra de 100 personas afectadas por la migraña se les facilita un farmaco para que aligere los sintomas.
+
+despues de la administracion se les pregunta si ha notado alivio en el dolor.
+
+Al cabo de un tiempo se suministra a los mismos individuos un placebo y se les vuelve a preguntar, si han notado o no una mejora. 
+
+nos preguntamos si es el mas efectivo el farmaco que el placebo en base y se les vuelve a preguntar si han notado o no mejora.
+
+nos preguntamos si es más efectivo el farmaco que el placebo en base en base a los resultados del estudio. 
+
+
+| Farmaco/Placebo |    si    |    No  |
+|-----------------|----------|--------|
+| Si              |    300   |    62  | 
+| No              |    38    |    600 | 
+
+El contraste que nos piden realizar es el siguiente:
+
+$$
+\left\{
+\begin{array}{ll}
+H_0: & p_1 =  p_2\\
+H_1: & p_1 > p_2 
+\end{array}
+\right.
+$$
+
+
+donde p_1 y p_2 representa las proporciones de gente de gente que encuentran el placebo respectivamente.
+
+el contraste de hipotesis para la proporcion Z creamos una funcion la llamaremos hipconbay
+
+```{r}
+hipconbay <- function(b,c,n){
+  (((b/n)-(c/n))/sqrt((b+c)/n^2))
+}
+
+```
+
+```{r}
+hipconbay(62, 38, 1000)
+
+
+```
+el p-valor para el contraste considerado es:
+
+$$P(Z>2.4)=0.008$$
+
+por lo tanto concluimos que no tenemos evidencias suficientes para rechazar la hipotesis nula y podemos afirmar que el farmaco es mas efectivo que el placebo.
+
+
+# contraste de proporciones para muestras en R con el paquete mnecmar 
+
+para este test usar "install.packages(mcnemar)"
+
+
+1- creamos la muestra
+
+```{r}
+set.seed(333)
+madres.eleg.prop.empar <- sample(1:189,30, replace=T)
+muestra.madres.prop.empar <- birthwt[madres.eleg.prop.empar,]
+
+(matriz.prop.empar= table(muestra.madres.prop.empar$smoke, muestra.madres.prop.empar$ht))
+
+```
+
+|                  |   caracteristica 1   | 
+|------------------|----------------------|
+| caracteristica 2 |    si    |   no      |      
+|       si         |     a    |   b       |  
+|       no         |     c    |   d       |  
+
+ "nota revisar como delimitar el tamaño de una tabla en markdown"
+ 
+fijemonos que la matriz no corresponde ya que a=1, b=10, c=3, d=16. arreglemos la matriz.
+
+```{r}
+matriz.prop.empar <- rbind(matriz.prop.empar[2,], matriz.prop.empar[1,])
+matriz.prop.empar <- cbind(matriz.prop.empar[,2], matriz.prop.empar[,1])
+print(matriz.prop.empar)
+```
+## utilizamos el test de mcnemar
+
+
+
+```{r}
+mcnemar.test(matriz.prop.empar)
+```
+Hemos obtenido un p-valor de 0.916 valor que esta entre 0.05 y 0.1 la llamada zona de penumbra donde no se puede tomar una desicion clara. 
+
+podemos decir, si consideramos que el p-valor es suficientemente grande, que no tenemos evidencia s suficientes para aceptar que la proporcion de madres fumadoras y con hipertension sea diferente.
+
+
+en otras palabras no rechazamos la hipotesis nula:
+
+$$H_0$$
+
+ahora bien hay que tener en cuenta que el p-valor no es demasiado grande para tal conclusion. 
+
+
+```{r}
+# recuerda anidar
+fucntt_two_side <- function(x_1, x_2, s1, s2, n1, n2, alpha=0.05, alternative){
+  alternative <- c("two side", "lefth", "rigth")
+  if(alternative == "lefth"){
+    c("-inf", (x_1-x_2-(qnorm(alpha)*sqrt(s1/n1 + s2/n2))))
+  }
+  else if(alternative == "rigth") {
+     c((x_1-x_2-(qnorm(alpha)*sqrt(s1/n1 + s2/n2))), "inf")
+  }
+  else if(alternative == "two side"){
+    c((x_1-x_2-(qnorm(alpha/2)*sqrt(s1/n1 + s2/n2))),
+      (x_1-x_2+(qnorm(alpha/2)*sqrt(s1/n1 + s2/n2))))
+  }
+}
+ 
+```
+```{r}
+x_1=136
+x_2=128
+alpha=0.01
+s1=16
+s2=10
+n1=25
+n2=16
+
+c((x_1-x_2-(qnorm(alpha/2)*sqrt(s1/n1 + s2/n2))),
+      (x_1-x_2+(qnorm(alpha/2)*sqrt(s1/n1 + s2/n2))))
+
+(x_1-x_2)/(sqrt(s1/n1 + s2/n2))
+
+
+
+```
+
+```{r}
+fucntt_two_side(x_1=136, x_2=128, s1=16, s2=10, n1=25, n2=16, alpha=0.01,
+                alternative= "two side")
+```
+```{r}
+2*(1-pnorm(abs(
+  (x_1-x_2)/(sqrt(s1/n1 + s2/n2)
+))))
+```
+
+```{r}
+x1_1=1260
+x1_2=1240
+n1_1=50
+n1_2=100
+s1_1=20^2
+s1_2=18^2
+
+
+fucntt_two_side(x_1=x1_1, x_2 = x1_2, s1=s1_1, s2=s1_2, n1=n1_1,
+                n2=n1_2, alpha = 0.02, alternative = "two side")
+```
+
+
+```{r}
+#calculamos el p-valor 
+p1 <- 2*pf(1.234568, df1=n1_1-1, df2 = n1_2-1, lower.tail = TRUE)
+p2 <- 2*pf(1.234568, df1=n1_1-1, df2 = n1_2-1, lower.tail = FALSE)
+
+pvalue <- min(p1, p2)
+
+pvalue
+```
+el p-valor es alto por lo tanto determinamos que no existe evidencia suficiente para rechazar H_0, por lo tanto se procede con el test normal si fueran desviaciones diferentes, seria el test de welch.
+
+
+```{r}
+(x1_1-x1_2)/(sqrt(1/n1_1 + 1/n1_2)*sqrt((((n1_1-1)*s1_1)+((n1_2-1)*s1_2))/
+                                          (n1_1+n1_2)))
+```
+```{r}
+#calculamos el p-valor 
+
+pvalor <- 2*pt(6.221148, df=n1_1*n1_2-2)
+
+pvalor
+```
+
+
+```{r}
+t0=(x1_1-x1_2)/(sqrt((1/n1_1+1/n1_2)*((n1_1-1)*s1_1+
+(n1_2-1)*s1_2)/(n1_1+n1_2-2)))
+
+t0
+
+2*pt(t0, df=n1_1*n1_2-2)
+
+```
+intervalos de confianza
+
+
+```{r}
+c(x1_1-x1_2- qt(1-0.02/2,df=n1_1+n1_2-2)*sqrt((1/n1_1+1/n1_2)*((n1_1-1)*s1_1+(n1_2-1)*s1_2)/(n1_1+n1_2-2)),
+x1_1-x1_2 + qt(1-0.02/2,df=n1_1+n1_2-2)*sqrt((1/n1_1+1/n1_2)*((n1_1-1)*s1_1+(n1_2-1)*s1_2)/(n1_1+n1_2-2)))
+```
+
+## ejercicio 3 
+
+```{r}
+muestra_1 <- c(20, 12, 16, 18, 13, 22, 15, 20)
+muestra_2 <- c(17, 14, 12, 10, 15, 13, 9, 19, 20, 11)
+
+n11 <- length(muestra_1)
+n12 <- length(muestra_2)
+x11 <- mean(muestra_1)
+x12 <- mean(muestra_2)
+s11 <- var(muestra_1)
+s12 <- var(muestra_2)
+
+print(c(n11, n12, x11, x12, s11, s12))
+```
+
+
+# olvide que existia t.test
+
+```{r}
+t.test(muestra_1, muestra_2, alternative = "less", conf.level = 0.05, var.equal = TRUE)
+```
+
+
+```{r}
+x11-x12- qt(0.95,df=n11+n12-2)*sqrt((1/n11+1/n12)*((n11-1)*s11+(n12-1)*s12)/(n11+n12-2))
 ```
 
 
 
 
+#ejercicio 4 
+
+```{r}
+set.seed(345)
+aleacion1=round(0.2*(rnorm(20))+18.2,2)
+aleacion2=round(0.5*(rnorm(25))+17.8,2)
+
+aleacion1
+aleacion2
+```
 
 
+```{r}
+x1.1 <- mean(aleacion1)
+x1.2 <- mean(aleacion2)
+s1.1 <- sd(aleacion1)
+s1.2 <- sd(aleacion2)
+n1.1 <- length(aleacion1)
+n1.2 <- length(aleacion2)
+
+s1.1
+
+s1.2 
+```
+
+# prueba de varianzas
+
+```{r}
+f0 = s1.1^2/s1.2^2
+p1 <- 2*pf(f0, df1=n1.1-1, df2 = n1.2-1, lower.tail = TRUE)
+p2 <- 2*pf(f0, df1=n1.1-1, df2 = n1.2-1, lower.tail = FALSE)
+
+pvalue2 <- min(p1, p2)
+
+pvalue2
+
+var.test(aleacion1, aleacion2)
+
+
+```
+
+debido a que el valor es diferente de 0 se determina que el test de welch es el indicado, o test de variantes desiguales
+
+```{r}
+t.test(aleacion1, aleacion2, alternative = "two.sided", var.equal = FALSE)
+
+```
+
+```{r}
+abs(t.test(aleacion1, aleacion2, alternative = "two.sided", var.equal = FALSE)$p.value)
+```
+```{r}
+
+c(mean(aleacion1)-mean(aleacion2))
+t.test(aleacion1, aleacion2, alternative = "two.sided", var.equal = FALSE)$conf.int
+```
+el p-valor es muy pequeño, aunque el valor de x1-x2 si esta dentro del intervalo de confianza, por esta razon llegamos a la conclusion de que no existen evidencias suficientes para aceptar H0. 
+
+
+# ejercicio 5
+
+```{r}
+ibiza <- c(200, 500-200)
+mallorca <- c(210, 750-210)
+
+tabl <- cbind(ibiza, mallorca)
+
+tabl
+
+prop.test(tabl)
+```
+estimacion por prop.test
+
+```{r}
+prop.test(x=c(200, 210), n=c(500, 750), alternative = "two.sided", correct = F)
+```
+# ejercicio 6 muestras emparejadas
+
+```{r}
+a <- c(50, 30)
+b <- c(5, 15)
+
+conferencia <- rbind(a,b)
+
+mcnemar.test(conferencia)
+
+abs(mcnemar.test(conferencia)$p.value)
+
+```
 
 
 

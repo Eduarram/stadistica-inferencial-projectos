@@ -1,0 +1,62 @@
+---
+title: "taller_2_contraste de hipotesis"
+author: "geovanni Jesus Ramírez"
+date: "10/6/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## carga de las librerias necesarias 
+
+```{r cars}
+library(faraway)
+library(nortest)
+#library(car)
+library(caret)
+library(tidyverse)
+```
+
+## Ejercio 1 
+
+El data set irish es una tabla clasica que recopilo donald fisher publico en 1936 en este data set hay 150 flores, de tres especies en los que mide la longitud y anchura de sus petalos y sepalos, la media global de todas las subpoblaciones son: 
+
+
+
+```{r}
+resumen1 <- iris %>%
+  summarise(Media_muestral_Sepal.Length = mean(Sepal.Length), desviacion_muestral.sepal.length=sd(Sepal.Length))
+
+resumen1
+```
+
+consideremos una muestra de tamaño $n=50$ de la longitud del sepalo del data set iris que generamos con el siguiente codigo. 
+
+```{r}
+set.seed(333)
+muestra50 <- sample(iris$Sepal.Length, size = 50, replace = TRUE)
+
+```
+
+1.contrastar si podemos aceptar que la media muestral es igual a 5.5 contra que es distinta
+
+1.1 contraste de hipotesis.
+
+$$\left\{
+\begin{array}{ll}
+H_0: & \mu_u-\mu_m = 0\\
+H_1: & \mu_u \neq \mu_m 
+\end{array}
+\right.$$
+
+
+```{r}
+t.test(iris$Sepal.Length, muestra50, alternative = "two.sided")
+```
+EL P-valor es muy grande por lo que concluimos que nop hay razon para rechazar $H_0$
+
+```{r}
+t.test(iris$Sepal.Length, muestra50, alternative = "two.sided")$conf.int
+```

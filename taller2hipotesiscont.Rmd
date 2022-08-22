@@ -1,0 +1,204 @@
+---
+title: "Untitled"
+author: "geovanni Jesus Ramírez"
+date: "10/6/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## carga de las librerias necesarias 
+
+```{r cars, include=FALSE}
+library(faraway)
+library(nortest)
+library(car)
+library(tidyverse)
+library(epitools)
+```
+
+## Ejercio 1 
+
+El data set irish es una tabla clasica que recopilo donald fisher publico en 1936 en este data set hay 150 flores, de tres especies en los que mide la longitud y anchura de sus petalos y sepalos, la media global de todas las subpoblaciones son: 
+
+
+
+```{r}
+resumen1 <- iris %>%
+  summarise(Media_muestral_Sepal.Length = mean(Sepal.Length), desviacion_muestral.sepal.length=sd(Sepal.Length))
+
+resumen1
+```
+
+consideremos una muestra de tamaño $n=50$ de la longitud del sepalo del data set iris que generamos con el siguiente codigo. 
+
+```{r}
+set.seed(333)
+muestra50 <- sample(iris$Sepal.Length, size = 50, replace = TRUE)
+
+```
+
+1.contrastar si podemos aceptar que la media muestral es igual a 5.5 contra que es distinta
+
+1.1 contraste de hipotesis.
+
+$$\left\{
+\begin{array}{ll}
+H_0: & \mu_u-\mu_m = 0\\
+H_1: & \mu_u \neq \mu_m 
+\end{array}
+\right.$$
+
+
+```{r}
+t.test(muestra50, mu=5.5, alternative = "two.sided")
+```
+EL P-valor es muy grande por lo que concluimos que nop hay razon para rechazar $H_0$
+
+```{r}
+t.test(muestra50, mu=5.5, alternative = "two.sided")$conf.int
+```
+
+2.1 calcular el intervalo de confianza tipo -infinito a $x_0$ 
+
+
+```{r}
+t.test(iris$Sepal.Length, muestra50, alternative = "less")$conf.int
+```
+el intervalo de confianza va desde -infinito hasta 0.177438, si contiene el valor de 0 por lo que no existe evidencia suficiente para rechazar la hipotesis nula.
+
+
+# ejercicio numero 2 
+
+si consideramos el data set iris de la poblacion, la proporcion poblacional p de flores que tienen la longitud del sepalo mayor que 5 es
+
+```{r}
+sepalo_mayor_5 <- prop.table(table(iris$Sepal.Length>5))[TRUE]
+sepalo_mayor_5 
+```
+tomoamos una muestra de tamaño N=30 de la poblacion de iris y calculamos en ella la proporcion de flores con sepalo mayor que 5.
+
+```{r}
+set.seed(44)
+
+muestra_30 <- sample(iris$Sepal.Length, size = 30, replace = TRUE)
+x<- table(muestra_30 > 5)["TRUE"]
+x
+```
+```{r}
+phat <- as.numeric(prop.table(table(iris$Sepal.Length>5))["TRUE"])
+phat
+```
+
+2.1 Queremos contrastar si esta muestra confirma la proporcion de muestras con sepalo, mayor que 5 es 0.75 contra que es mayor de 0.75 cual es el test exacto y el test aproximado.
+
+por el test binom exact
+```{r}
+ binom.test(25, 30, 0.7867, alternative = "greater", conf.level = 0.95)
+```
+
+```{r}
+
+binom.exact(25, 30, conf.level = 0.95)
+```
+
+con binom exact determinamos que la proporcion 0.833334 se encuentra entre los intervalos de confianza, 0.6527 y 0.9435, por lo que no hay evidencias suficientes para rechazar H0
+
+por el test binnom.approx
+
+```{r}
+library(epitools)
+
+binom.approx(25, 30, conf.level = 0.95)
+
+```
+
+con el test de binom. aprox determinamos que la proporcion 0.8334 se encuentra entre los intervalos de confianza 0.69910, y 0.9667.
+
+
+
+extraer de los dos test los intervalos de confianza y decir que forma se utiliza para cada intervalo.
+
+1.es el metodo de clopper pearson y en en el segundo es la aproximacion de laplace.
+
+
+
+# ejercicio 3 
+
+El rastro de metales en al agua potable afecta el sabor y una concentración inusualmente alta puede representar un riesgo para la salud. El fichero zinc.txt contiene la concentración de zinc en el fondo y en la
+superficie de botellas de agua.
+Se cree que la concentración media de zinc del agua en el fondo de la botella es mayor que la de la superficie.
+Suponiendo que los datos siguen una ley normal, ¿hay evidencia suficiente para asegurarlo con un nivel de
+confianza del 95%?
+Plantea un contraste de hipótesis para estudiar si existe dicha evidencia. En particular, especifica la hipótesis
+nula H0, la hipótesis alternativa H1, la expresión del estadístico que se calculará a partir de los datos
+observados y la distribución de dicho estadístico.
+
+3.1-
+
+$$
+\left\{
+\begin{array}{ll}
+H_0: & \mu_{fondo}-\mu_{superficie} = 0\\
+H_1: & \mu_{fondo} - \mu_{superficie} >0
+\end{array}
+\right.
+$$
+
+
+la hipotesis nula es que no existe diferencia entre que la media muestral de la acumulacion de zinc en la superficie y la media muestral del fondo.
+
+la hipotesis nula plantea que la media muestral de la acumulacion de zinc en la superficie es mayor a la acumulacion de zinc en la media muestral del fondo.  
+
+
+
+
+# Ejercicio 4 
+
+
+carga el fichero de zinc utiliza la funcion de R que calcula el test de hipotesis definido 
+
+
+
+```{r}
+zinc <- read.table(file.choose(), header = TRUE)
+zinc
+```
+
+calculmos el contraste de hipotesis
+
+
+```{r}
+t.test(zinc$bottom, zinc$surface, alternative = "greater", paired = TRUE)
+```
+
+el p valor es demasiado pequeño por lo que suponemos que no hay evidencia suficiente para rechazar H1.
+
+
+# ejercicio 5 
+
+
+## continuacion del ejercicio de concentracion del zinc
+
+Encuentra la región crítica (es decir el intervalo en el cual se rechaza la hipótesis nula) y la región de
+aceptación (es decir el intervalo de no rechazo de la hipótesis nula)
+
+
+```{r}
+n <- 10
+alpha <- 0.05
+cuanil_qt <- qt(1-alpha, df=n-1)
+cuanil_qt
+```
+la region de aceptacion va desde $-\infty$ a 1.8332.
+y la region de rechazo va desde 1.8332 a $\infty$.
+
+
+
+```{r}
+
+```
+
+

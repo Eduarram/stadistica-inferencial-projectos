@@ -1,0 +1,22 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//udemy.com//Udemy
+METHOD:PUBLISH
+BEGIN:VEVENT
+ORGANIZER;CN="Udemy":mailto:no-reply@udemy.com
+SUMMARY:¡Hora de aprender!
+SEQUENCE:0
+DTSTAMP:20220406T021700Z
+DTSTART;TZID=America/Mexico_City:20220405T200000
+DTEND;TZID=America/Mexico_City:20220405T203000
+UID:284118
+RRULE:FREQ=DAILY;
+DESCRIPTION:Estadística inferencial para Machine Learning con R y Python (https://www.udemy.com/course/estadisticainferencial/learn/)
+
+BEGIN:VALARM
+TRIGGER:-PT20M
+ACTION:DISPLAY
+DESCRIPTION:¡Hora de aprender!
+END:VALARM
+END:VEVENT
+END:VCALENDAR

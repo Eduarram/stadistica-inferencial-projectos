@@ -47,7 +47,55 @@ alpha_t <- 0.1
 
 c(sqrt(valor_izquierdo), sqrt(valor_derecho))
 
+################################################################################
+######################    ejercicio 3 ##########################################
+################################################################################
 
+sample_size=function(error,p=0.5,alpha=1-0.95){
+  A0=2*error
+  n=ceiling(qnorm(1-alpha/2)^2/A0^2)
+  n
+}
+
+
+sample_size(c(0.05,0.03,0.02,0.01))
+
+
+tabla_n=data.frame(error=c(0.05,0.03,0.02,0.01),
+                   n=sample_size(c(0.05,0.03,0.02,0.01),alpha=1-0.95), 
+                   conf.level=0.95)
+tabla_n
+
+################################################################################
+#######################################  ejercio 4 #############################
+################################################################################
+
+#### parte 1 calcular los intervalos de confianza para la muestra poblacional
+
+
+ICZ(n=81, med = 112, sigma = 36, alpha = 0.05)
+
+#### parte 2 calcular los intervalos de confianza de la sigma de las reservas.
+
+
+n=81
+stilde=36
+alpha=1-0.95
+IC=c((n-1)*stilde^2/qchisq(1-alpha/2,df=n-1),(n-1)*stilde^2/qchisq(alpha/2,df=n-1))
+IC
+
+#### parte 3 calcular la proporcion  de la poblacion.
+
+library(epitools)
+
+binom.exact(30, 81)
+
+
+######### parte 4 calcular la poblacion optima
+
+A_o <- 0.1*0.05
+alpha <- 1-0.95
+n <- ceiling(qnorm(1-alpha/2)^2/A_o^2)
 
 
 
