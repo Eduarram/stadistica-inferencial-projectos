@@ -1,0 +1,554 @@
+---
+title: "curvas ROC"
+author: "geovanni Jesus Ramírez"
+date: "2022-10-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# codigo de las curvas ROC
+
+```{r}
+
+alphas <- seq(from=0, to=1, by=0.01)
+tasa.falsos.positivos <- alphas
+tasa.veredaderos.positivos <- 1 - pnorm(qnorm(1-alphas)-(2.5-2)/(2/sqrt(50)))
+
+plot(tasa.falsos.positivos, tasa.veredaderos.positivos, type="l",
+     xlab = expression(P[FP]),
+     ylab = expression(P[vp]),
+     main = "curva Roc",
+     col = "blue"
+     )
+text(0.25, 0.75, "Neyman-Pearson",
+     col="blue")
+lines(c(0,1), c(0,1), col="red")
+text(0.5, 0.45, srt=33, "Desicion ciega", col="red")
+
+
+```
+
+# Tasa de precicion 
+```{r}
+precision <- tasa.veredaderos.positivos/(tasa.falsos.positivos + tasa.veredaderos.positivos)
+precision[1]=1
+
+reca_ll <- tasa.veredaderos.positivos
+
+plot(reca_ll, precision, type="l", xlab="recall", ylab="Presicion",
+     main="curva PR", col="blue")
+text(0.35, 0.92, "Neyman-Pearson",
+     col="blue")
+lines(c(0,1), c(0.5,0.5), col="red")
+text(0.5, 0.525, "Desicion ciega", col="red")
+```
+
+#### Bondad de ajuste 
+
+```{r}
+muestra <- iris$Sepal.Width
+plot(density(muestra), main="estimacion de la densidad")
+
+x <- seq(from=1, to=5, by=0.02)
+mu <- mean(iris$Sepal.Width)
+sigma <- sd(iris$Sepal.Width)
+lines(x, dnorm(x, mean=mu, sd=sigma), col="red")
+
+```
+
+## qqplot
+
+
+```{r}
+library(car)
+
+qqPlot(iris$Sepal.Width, distribution="norm", mean=mu, sd=sigma)
+```
+
+## test de chicuadrada de pearson
+
+
+```{r}
+set.seed(2020)
+muestra.flores <- sample(iris$Species, 30)
+chisq.test(table(muestra.flores), simulate.p.value = T, B=2000)
+  
+```
+
+
+
+# Ejemplo para comprobar si cierta distribucion es normal usando el test de chi-cuadrada,
+
+un tecnico de medio ambiente quiere estudiar el aumento de temperatura del agua a 2 kilometros de los vertidos de agua autorizados de una planta industrial.
+
+el responsable de la empresa afirma que estos aumentos de temperatura siguen una ley normal con mu=3.5 decimos de grado C y sigma= 0.7 decimos de grado C.
+
+el tecnico lo posa en entredicho, para decidirlo, tomoa una muestra aleatoria de 40 observaciones del aumento de las temperaturas(en las temperaturas de grado), y se obtienen los resultados siguientes.
+
+
+# reservas de vuelos 
+
+```{r}
+y <- c(1.6, 1.8, 2.8, 3.9, 4.3, 4.7, 4.8, 7.3, 8.7, 11.7)
+fxt <- 1-exp(-y/5)
+g <- 1:10
+df1 <- data.frame(i= g, xi=y, fx = fxt, 
+                  fx1 = abs(fxt-(g-1)/10),
+                  fxt = abs(fxt -(g/10)))
+
+df1$fxM <- pmax(df1$fx1, df1$fxt)
+
+knitr::kable(df1)
+
+```
+
+#### Ejercicio del anova
+
+```{r}
+to <- c(2,4,7,8,9,10,10,6)
+Fac <- c(1,1,2,2,2,3,3,3)
+to_2 <- to^2
+df <- data.frame(to, Fac, to_2)
+N1 <- length(Fac)
+niveles_sumas <- aggregate(to ~ Fac, data = df, FUN = sum)
+medias_niveles <- aggregate(to ~ Fac, data = df, FUN = mean)
+
+
+##### suma de los cuadrados totales 
+
+suma_de_cuadrados <- sum(to_2) - (sum(to)^2/N1)
+
+
+
+#### suma de los cuadrados de los ta tam
+
+SST <- sum(niveles_sumas$to^2/table(Fac))-(sum(to)^2/N1)
+##suma de residuos 
+
+SSTr <- suma_de_cuadrados - SST 
+
+print(c(suma_de_cuadrados, SST, SSTr))
+
+```
+
+## Estadisticos del Anova
+
+```{r}
+
+MSTr <- SSTr/(3-1)
+MSe <- suma_de_cuadrados/(length(to)-3)
+
+est <- MSTr/MSe
+
+(p = pf(est,3-1,8-3,lower.tail = FALSE))
+print(c(MSTr, MSe, est))
+p
+summary(aov(to~Fac))
+```
+
+
+
+##Ejepoo del test de bonferroni, holm, duncan y tukey.
+
+####variables
+, 
+```{r}
+lb <- c(4, 5, 9,9, 11, 12, 15) #variables
+fac<- c(1,1,2,2,2,3,3) #factores
+n1 <- c(2,3,2) #numer de observaciones por factor 
+N<- sum(n1) # universo
+K <- 3
+M <- mean(lb) # media
+LB <- lb^2 # variables al cuadrado
+df2 <- data.frame(lb, fac, LB)
+Niv_suma <- aggregate(lb~fac,data = df2, FUN = sum) # niveles de suma 
+niv_media <- aggregate(lb~fac, data = df2, FUN=mean) # nveles de la #media 
+
+
+```
+
+
+### sumas de variables
+
+```{r}
+#sumas de cuadrados 
+SMC <- sum(LB) - (sum(lb)^2/N)
+#suma de los cuadrados de los tratamientos
+SST2 <- SST <- sum(Niv_suma$lb^2/table(fac))-(sum(lb)^2/N)
+#suma de los residuos
+SSTr2 <- SMC - SST2
+
+print(c(SMC, SST2,SSTr2))
+
+```
+
+
+# estadisticos de contraste del Anova
+
+```{r}
+# cuadrado medio de ,os tratamientos
+# K=3 representa el numero de factores
+Mstr2 <- SST2/(3-1) #suma de los cuadrados de los tratamientos 
+# cuadrado medio residual 
+MSE2 <- SSTr2/(N-3) #suma de  los residuos
+# estadistco de contraste
+ets <- Mstr2/MSE2
+
+print(c(Mstr2, MSE2, ets))
+```
+
+##calculo del pvalor y manera rapida del test de anova
+
+
+```{r}
+p=pf(ets, 3-2, N-2, lower.tail = FALSE)
+p
+
+summary(aov(lb~fac))
+```
+el pvalor del anova es menor al estadistico de conctraste por lo que concluimos que por lo menos en alguna pareja las medias es diferente.
+
+
+
+#### test de bomfrroni
+
+```{r}
+#hacemos el vector de enparejamiento
+emp <- rbind(c(1,2), c(1,3), c(2,3))
+#construimos los estadisticos de contraste
+estadist_contraste <- (niv_media[emp[,1],2]- niv_media[emp[,2],2])/(sqrt(MSE2*(1/10+1/10)))
+df3 <- data.frame(emp, estadist_contraste)
+estadist_contraste
+```
+####calculo del pvalor
+
+```{r}
+calcul.pvalor <- function(x){2*(1-pt(abs(x), N-K))}
+p.valores <- sapply(estadist_contraste, calcul.pvalor)
+df4<-cbind(df3,p.valores)
+pares <- emp[which(p.valores>(0.05/3)),]
+p.valores
+pares
+```
+
+
+##metodo de bonferroni rapido 
+```{r}
+pairwise.t.test(lb, fac, p.adjust.method = "bonferroni")
+```
+el test de bonferroni muestra que en la pareja 1,2 las medias son diferentes.
+
+
+###test de Holm
+
+```{r}
+pairwise.t.test(lb, fac, p.adjust.method = "holm")
+```
+en el test de holm observamos que todos los valores son menores al contraste de hipotesis por lo que concluimos que no existe evidencia para rechazar la hipotesis nula.
+
+
+
+###ejercicio de Anova por factores aleatorios
+
+```{r}
+f1 <- c(2.1, 2.2, 1.8, 2.1, 2.2, 2.6, 1.9, 2.0, 1.8, 2.7, 1.6, 2.2,2.0, 2.5, 2.0, 2.4,1.9, 2.8, 1.9, 2.1)
+
+fertilizante <- rep(1:4, 5)
+parcela <- rep(1:5, each=4)
+
+df3 <- data.frame(f1, parcela, fertilizante)
+
+```
+
+## sumas de cuadrados 
+
+
+```{r}
+sum.trata <- aggregate(f1~parcela, data=df3, FUN = "sum")
+sum.bloque <- aggregate(f1~fertilizante, data=df3, FUN="sum")
+media.trata <- aggregate(f1~parcela, data=df3, FUN = "mean")
+media.bloque <-aggregate(f1~fertilizante, data=df3, FUN = "mean")
+suma.total <- sum(df3$f1)
+media.total <- mean(df3$f1)
+suma.total.cuadrados <- sum(df3$f1^2)
+
+```
+
+
+### variabilidad total 
+
+```{r}
+
+SST <- (suma.total.cuadrados - suma.total^2/length(df3$f1))
+
+SST
+  
+```
+
+### variabilidad debida a los tratamientos 
+
+```{r}
+bloques <- 4
+tratamientos <- 5
+
+SS.tr <- ((sum(sum.trata[,2]^2)/bloques) - (suma.total^2)/length(df3$parcela))
+
+SS.tr
+```
+
+### varaiabilidada a los bloques 
+
+```{r}
+SS.Bl <- ((sum(sum.bloque[,2]^2)/tratamientos) - (suma.total^2)/length(df3$parcela))
+
+SS.Bl
+```
+
+## variabilidad debida a factores aleatorios. 
+
+```{r}
+SSE <- SST-SS.tr - SS.Bl
+
+SSE
+```
+
+### cuadrado medio de los tratamientos 
+
+```{r}
+MStr <- SS.tr/(tratamientos-1)
+MStr
+```
+
+### cudrado medio del error 
+
+```{r}
+MS.e <- SSE/((tratamientos-1)*(bloques-1))
+ 
+MS.e
+```
+### cudrado medio de los bloques 
+```{r}
+MSBL <- SS.Bl/(bloques-1)
+MSBL
+```
+### F de fisher
+
+```{r}
+Fish <- MStr/MS.e
+Fish
+```
+
+## p-valor
+
+```{r}
+pf = pf(Fish, (tratamientos-1), (tratamientos-1)*(bloques-1))
+pf
+```
+
+### anova de dos vias
+
+```{r}
+name_molusco <- rep(c(rep("scabria", 8), rep("digitalis", 8)), 3)
+fact_molusco <- rep(rep(1:2, each=8), 3)
+fact_concentracion <-rep(c(100, 75, 50), each=16)
+medias_fac <- c(7.16, 6.78, 13.60, 8.93, 8.26, 14.00, 16.10, 9.66, 6.14, 3.86, 10.40, 5.49, 6.14, 10, 11.60, 5.80, 5.20, 5.20, 7.18, 6.37, 13.20, 8.39, 10.40, 7.18, 4.47, 9.90, 5.75, 11.8, 4.95, 6.49, 5.44, 9.90,11.11,
+                9.74, 18.8, 9.74, 10.50, 14.60, 11.10, 11.80, 9.63, 6.38, 13.40, 14.50, 15.50, 10.20, 17.70, 12.30)
+
+df4 <- data.frame(name_molusco, fact_molusco, fact_concentracion, medias_fac)
+
+head(df4, 10)
+
+```
+
+
+### suma combinacion niveles 
+```{r}
+suma_combinacion_niv <- aggregate(medias_fac ~ fact_molusco + fact_concentracion, data = df4, FUN="sum")
+
+suma_combinacion_niv
+```
+
+
+### Media combinacion niveles 
+```{r}
+media_combinacion_niv <- aggregate(medias_fac ~ fact_molusco + fact_concentracion, data = df4, FUN="mean")
+
+media_combinacion_niv
+```
+
+### suma moluscos
+
+```{r}
+suma_moluscos <- aggregate(medias_fac ~ fact_molusco, data=df4, FUN="sum")
+
+suma_moluscos
+
+
+```
+
+### media moluscos
+```{r}
+media_moluscos <- aggregate(medias_fac ~ fact_molusco, data=df4, FUN="mean")
+
+media_moluscos
+```
+### suma concentraciones
+
+```{r}
+suma_concentraciones <- aggregate(medias_fac ~ fact_concentracion, data=df4, FUN="sum")
+
+suma_concentraciones
+```
+
+###media concentracion 
+
+```{r}
+media_concentracion <- aggregate(medias_fac ~ fact_concentracion, data=df4, FUN="mean")
+
+media_concentracion
+```
+
+### suma total 
+
+```{r}
+(suma.total <- sum(df4$medias_fac))
+(media.total <- mean(df4$medias_fac))
+(suma.cuadrados <- sum(df4$medias_fac^2))
+
+print(c(suma.total, media.total, suma.cuadrados))
+```
+
+### suma de la varivilidad total
+
+```{r}
+SSt <- suma.cuadrados - suma.total^2/(2*3*8)
+SSt
+```
+
+##variabilidad de las medias del factor a respecto a la media global FA
+```{r}
+B <- (tapply(suma_combinacion_niv$medias_fac,suma_combinacion_niv$fact_concentracion, mean))
+
+(SSA <- ((1/(3*8))*sum(suma_moluscos[,2]^2)) - suma.total^2/(2*3*8))
+
+SSA
+```
+#### var 2 
+Recordatorio si el factor a calcular es A se divide sobre elk numero de factores de B y si el factor es B se divide sobre el numero de factores de A si no da numeros bien raros 
+
+```{r}
+
+SSB <- (sum(suma_concentraciones[,2]^2)*(1/(2*8))) - suma.total^2/(2*3*8)
+
+SSB
+```
+
+####variabilidad total
+```{r}
+SSTr <- (1/8)*sum(suma_combinacion_niv$medias_fac^2)-suma.total^2/(2*3*8)
+
+SSTr
+```
+
+### variavilidad de la interaciion de los factores 
+
+
+```{r}
+SSAb <- (SSTr-SSA-SSB)
+
+SSAb
+```
+
+
+###varaibilidad debida de los factorees alatorios
+
+```{r}
+SSE <- (SSt-SSTr)
+SSE
+```
+
+
+#### cudrado medio del factor A
+
+```{r}
+MSa <- SSA/(2-1) 
+MSa
+```
+
+
+### cuadrado medio 
+
+```{r}
+MSb <- SSB/(3-1)
+MSb
+```
+
+
+
+### cuadrado medio de interaccion entre los factores a y b
+```{r}
+MSab <- SSAb/(3)
+
+MSab
+```
+
+
+### cuadrado medio de los tratamientos
+
+```{r}
+MSTr <- SSTr/((3*2)-1)
+
+MSTr
+```
+
+### cuadrado medio residual 
+```{r}
+MSSe <- SSE/(3*2*(8-1)) 
+MSSe
+```
+
+# Tabla del Anova
+
+```{r}
+var  <- c("Tratamientos", "A", "B", "AB", "Error")
+GDL<- c((3*2-1), 1, 2, 2,3*2*(8-1))
+suma_cuadrados <- c(SSTr, SSA, SSB, SSAb, SSE) 
+
+Df5<- data.frame(var, GDL, suma_cuadrados)
+library(tidyverse)
+
+```
+
+
+#### creacion de una funciom para R
+
+```{r}
+ 
+
+calculo.pvalor <- function(x, y, n){
+  n <- (length(df4$medias_fac)-3*2)
+  y <- GDL
+  pf(x, y, n, lower.tail=FALSE)
+}
+sapply(Df5$est_contraste,FUN=calculo.pvalor)
+```
+
+
+
+####tabla 
+```{r}
+
+Df5 <- Df5 %>% mutate(est_contraste=suma_cuadrados/MSSe) %>% 
+  mutate(pvalores=c(0, 0.213073, 0, 0.852562, 0))
+```
+
+
+
+
+
+
+
+

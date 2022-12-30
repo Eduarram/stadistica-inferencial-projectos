@@ -754,7 +754,7 @@ ahora bien hay que tener en cuenta que el p-valor no es demasiado grande para ta
 
 
 ```{r}
-# recuerda anidar
+
 fucntt_two_side <- function(x_1, x_2, s1, s2, n1, n2, alpha=0.05, alternative){
   alternative <- c("two side", "lefth", "rigth")
   if(alternative == "lefth"){
@@ -770,6 +770,8 @@ fucntt_two_side <- function(x_1, x_2, s1, s2, n1, n2, alpha=0.05, alternative){
 }
  
 ```
+
+
 ```{r}
 x_1=136
 x_2=128
@@ -793,7 +795,7 @@ fucntt_two_side(x_1=136, x_2=128, s1=16, s2=10, n1=25, n2=16, alpha=0.01,
                 alternative= "two side")
 ```
 ```{r}
-2*(1-pnorm(abs(
+abs(2*(1-pnorm(
   (x_1-x_2)/(sqrt(s1/n1 + s2/n2)
 ))))
 ```
